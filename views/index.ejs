@@ -419,6 +419,37 @@
           </div>
         </div>
 
+        <!-- HTML Injection -->
+        <div class="vuln-card" id="html-injection-section">
+          <div class="card-header">
+            <div class="card-icon icon-orange">📄</div>
+            <div class="card-header-info">
+              <div class="card-title">HTML Injection</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A03:2021</span>
+                <span class="risk-badge risk-high">HIGH</span>
+                <span class="owasp-tag">CWE-79</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              A standalone page that extracts the <code>q</code> parameter from the URL and directly renders it into the page via <code>innerHTML</code> without sanitization.
+            </p>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <p style="margin-bottom: 10px; font-size: 13px; color: var(--text-secondary);">
+              Click below to open the vulnerable page in a new tab.
+            </p>
+            <div class="btn-row">
+              <a href="/html-injection.html?q=%3Ch1%3EHello%3C/h1%3E" target="_blank" class="btn btn-primary" style="text-decoration:none; text-align:center;">
+                🔗 Open Vulnerable Page
+              </a>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
 
