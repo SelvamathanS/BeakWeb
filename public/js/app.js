@@ -684,3 +684,32 @@ document.addEventListener('keydown', e => {
     document.getElementById('apidisc-section')?.scrollIntoView({ behavior: 'smooth' });
   }
 });
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NEW VULNERABILITY HANDLERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── HTML INJECTION ───────────────────────────────────────────────────────────
+window.triggerHtmlInjection = function () {
+  const val = document.getElementById('html-inj-input').value;
+  const el  = document.getElementById('html-inj-output');
+  if (el) {
+    el.innerHTML = val; // INTENTIONAL HTML INJECTION (innerHTML sink)
+  }
+};
+
+// ─── OS COMMAND INJECTION (PING) ──────────────────────────────────────────────
+window.execPing = async function () {
+  const host = document.getElementById('ping-input').value;
+  if (!host) return toast('Enter a hostname or IP', 'error');
+  await apiCall('POST', '/exec/ping', { host }, 'ping-response');
+};
+
+// ─── OPEN REDIRECT ────────────────────────────────────────────────────────────
+window.triggerRedirect = function () {
+  const url = document.getElementById('redirect-input').value;
+  if (!url) return toast('Enter a URL', 'error');
+  // Navigate directly to the vulnerable backend redirect route
+  window.location.href = `/redirect?url=${encodeURIComponent(url)}`;
+};
+

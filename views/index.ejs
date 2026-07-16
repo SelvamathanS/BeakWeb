@@ -101,7 +101,16 @@
         <span class="nav-badge badge-medium">MED</span>
       </button>
 
+      <button class="nav-item" data-section="htmlinj-section">
+        <span class="nav-icon">📄</span> HTML Injection
+        <span class="nav-badge badge-high">HIGH</span>
+      </button>
+
       <div class="sidebar-section-title">Client-Side</div>
+      <button class="nav-item" data-section="redirect-section">
+        <span class="nav-icon">🔗</span> Open Redirect
+        <span class="nav-badge badge-medium">MED</span>
+      </button>
       <button class="nav-item" data-section="clickjack-section">
         <span class="nav-icon">🖼️</span> Clickjacking
         <span class="nav-badge badge-medium">MED</span>
@@ -434,17 +443,27 @@
           </div>
           <div class="card-body">
             <p class="card-description">
-              A standalone page that extracts the <code>q</code> parameter from the URL and directly renders it into the page via <code>innerHTML</code> without sanitization.
+              Type an HTML payload below and see it render live on this dashboard. This simulates a reflected HTML injection without navigating away.
             </p>
+            <div style="padding:12px;background:rgba(255,107,53,0.06);border:1px solid rgba(255,107,53,0.2);border-radius:8px;font-size:12px;color:var(--text-secondary);margin-top:8px">
+              <strong style="color:var(--high)">Rendered HTML Output (innerHTML sink):</strong>
+              <div id="html-inj-output" style="margin-top:6px;color:var(--text-primary);min-height:20px;">
+                (Injected HTML will appear here)
+              </div>
+            </div>
           </div>
           <div class="card-try">
             <div class="try-label">🧪 Try It</div>
-            <p style="margin-bottom: 10px; font-size: 13px; color: var(--text-secondary);">
-              Click below to open the vulnerable page in a new tab.
-            </p>
+            <div class="form-group">
+              <label class="form-label">HTML Payload (inserted directly into the DOM)</label>
+              <textarea class="form-textarea" id="html-inj-input" placeholder="<h1>Test</h1>"></textarea>
+            </div>
             <div class="btn-row">
-              <a href="/html-injection.html?q=%3Ch1%3EHello%3C/h1%3E" target="_blank" class="btn btn-primary" style="text-decoration:none; text-align:center;">
-                🔗 Open Vulnerable Page
+              <button class="btn btn-primary" onclick="triggerHtmlInjection()">Inject HTML</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('html-inj-input','<h1>Hello <span style=\'color:red\'>World</span>!</h1>')">Load HTML</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('html-inj-input','<a href=\'http://attacker.com\'>Click to win a prize!</a>')">Load Phish</button>
+              <a href="/html-injection.html?q=%3Ch1%3EHello%3C/h1%3E" target="_blank" class="btn btn-ghost btn-sm" style="text-decoration:none; text-align:center;">
+                🔗 Open Standalone Page
               </a>
             </div>
           </div>
@@ -941,6 +960,43 @@
           </div>
         </div>
 
+        <!-- OS Command Injection (Ping) -->
+        <div class="vuln-card">
+          <div class="card-header">
+            <div class="card-icon icon-red">⚡</div>
+            <div class="card-header-info">
+              <div class="card-title">OS Command Injection (Ping)</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A03:2021</span>
+                <span class="risk-badge risk-critical">CRITICAL</span>
+                <span class="owasp-tag">CWE-78</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              The <code>/exec/ping</code> endpoint takes a hostname or IP address and passes it directly to the system's <code>ping</code> command via concatenation. Attackers can append additional OS commands.
+            </p>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="form-group">
+              <label class="form-label">Hostname or IP</label>
+              <input class="form-input" id="ping-input" value="127.0.0.1" />
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="execPing()">🏓 Ping</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('ping-input', '127.0.0.1 & whoami')">Inject (Windows)</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('ping-input', '127.0.0.1 ; id')">Inject (Linux/Mac)</button>
+            </div>
+            <div class="response-viewer" id="ping-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body" style="white-space: pre-wrap; font-family: monospace;"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- File Upload -->
         <div class="vuln-card" id="upload-section">
           <div class="card-header">
@@ -1409,12 +1465,43 @@
     <!-- ══════════════════════════════════════════════════════════════════
          SECTION: CLIENT-SIDE / RATE LIMITING
     ══════════════════════════════════════════════════════════════════════ -->
-    <section class="section" id="clickjack-section">
+    <section class="section" id="redirect-section">
       <div class="section-title">
         <div class="section-title-icon icon-teal">🖼️</div>
         Client-Side & Miscellaneous
       </div>
       <div class="cards-grid">
+
+        <!-- Open Redirect -->
+        <div class="vuln-card" id="redirect-section">
+          <div class="card-header">
+            <div class="card-icon icon-teal">🔗</div>
+            <div class="card-header-info">
+              <div class="card-title">Open Redirect</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A01:2021</span>
+                <span class="risk-badge risk-medium">MEDIUM</span>
+                <span class="owasp-tag">CWE-601</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              The <code>/redirect</code> endpoint takes a <code>url</code> parameter and redirects the user immediately without validating if the domain is trusted. Used in phishing campaigns.
+            </p>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="form-group">
+              <label class="form-label">Destination URL</label>
+              <input class="form-input" id="redirect-input" value="https://example.com" />
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="triggerRedirect()">✈️ Redirect Me</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('redirect-input', 'https://google.com')">Load Google</button>
+            </div>
+          </div>
+        </div>
 
         <!-- Clickjacking -->
         <div class="vuln-card">

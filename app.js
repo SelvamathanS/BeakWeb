@@ -66,6 +66,7 @@ app.use('/', require('./routes/code'));
 app.use('/', require('./routes/upload'));
 app.use('/', require('./routes/session'));
 app.use('/', require('./routes/csrf'));
+app.use('/', require('./routes/redirect'));
 
 // ─── Main dashboard ───────────────────────────────────────────────────────────
 app.get('/', (req, res) => {

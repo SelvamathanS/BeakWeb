@@ -56,6 +56,32 @@ router.post('/exec/python', (req, res) => {
     res.json(result);
   });
 });
+// ─── OS Command Injection (Ping) ────────────────────────────────────────────────
+router.post('/exec/ping', (req, res) => {
+  const { host } = req.body;
+
+  if (!host) return res.status(400).json({ error: 'host is required' });
+
+  // INTENTIONALLY VULNERABLE: Direct concatenation of user input to OS command
+  const isWin = process.platform === 'win32';
+  const cmd = isWin ? `ping -n 4 ${host}` : `ping -c 4 ${host}`;
+
+  let result = {
+    host,
+    output: null,
+    error:  null,
+    _warning: 'RCE: User-supplied host is passed directly to the ping command'
+  };
+
+  exec(cmd, { timeout: 5000 }, (err, stdout, stderr) => {
+    if (err && !stdout) {
+      result.error = err.message;
+    } else {
+      result.output = stdout || stderr;
+    }
+    res.json(result);
+  });
+});
 
 // ─── Admin endpoint (broken access control) ───────────────────────────────────
 router.get('/api/admin', (req, res) => {
