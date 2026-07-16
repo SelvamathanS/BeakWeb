@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: security-playground
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./database.db:/app/database.db
+      - ./uploads:/app/uploads
+    environment:
+      - PORT=3000
+      - NODE_ENV=development
+    restart: unless-stopped
+    networks:
+      - playground-net
+
+  # Optional: PHP service for PHP code injection demo
+  php:
+    image: php:8.2-cli
+    container_name: security-playground-php
+    volumes:
+      - ./php-sandbox:/app
+    working_dir: /app
+    command: ["php", "-S", "0.0.0.0:8080"]
+    ports:
+      - "8080:8080"
+    networks:
+      - playground-net
+    profiles:
+      - php  # Only starts with: docker compose --profile php up
+
+networks:
+  playground-net:
+    driver: bridge

